@@ -30,14 +30,11 @@ app.get("/api/:date", (req, res) => {
     // Check if date passed matches YYYY-MM-DD format
     const dateRegex = /^[\d]{4}-[\d]{2}-[\d]{2}$/i;
     const unixRegex = /^[\d]+$/i;
-    console.log("dateRegex: ", dateRegex.test(date), "unixRegex: ", unixRegex.test(date))
         // If date is in YYYY-MM-DD format
         if (dateRegex.test(date)) {
-            console.log("if block"); // TODO: remove
             // Parse date to unix timestamp and convert date to utc string
             return res.json({ unix: Date.parse(date), utc: new Date(date).toUTCString() });
         } else if (unixRegex.test(date)) {
-            console.log("else block"); // TODO: remove
             // Return date as Int and convert to utc date string
             return res.json({ unix: parseInt(date), utc: new Date(parseInt(date)).toUTCString() })
         } else {

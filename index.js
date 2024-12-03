@@ -1,48 +1,59 @@
-// index.js
-// where your node app starts
-
 // init project
-var express = require('express');
-var app = express();
+const express = require("express");
+const app = express();
+const PORT = process.env.PORT || 3000;
 
-// enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
-// so that your API is remotely testable by FCC 
-var cors = require('cors');
-app.use(cors({optionsSuccessStatus: 200}));  // some legacy browsers choke on 204
+// Enable CORS (https://en.wikipedia.org/wiki/Cross-origin_resource_sharing)
+// so that API is remotely testable by FCC
+const cors = require("cors");
+app.use(cors({ optionsSuccessStatus: 200 })); // some legacy browsers choke on 204
 
+// Serve static files in Express
 // http://expressjs.com/en/starter/static-files.html
-app.use(express.static('public'));
+app.use(express.static("public"));
 
+// Basic routing
 // http://expressjs.com/en/starter/basic-routing.html
-app.get("/", function (req, res) {
-  res.sendFile(__dirname + '/views/index.html');
+app.get("/", (req, res) => { res.sendFile(__dirname + "/views/index.html"); });
+
+// First API endpoint
+app.get("/api/hello", (req, res) => {
+    res.json({ greeting: "hello API" });
 });
 
-
-// your first API endpoint... 
-app.get("/api/hello", function (req, res) {
-  res.json({greeting: 'hello API'});
-});
-
-app.get("/api/:date", (req, res) => {
+app.get("/api/:date?", (req, res) => {
     // Get params from URL
     const date = req.params.date;
-    // Check if date passed matches YYYY-MM-DD format
-    const dateRegex = /^[\d]{4}-[\d]{2}-[\d]{2}$/i;
-    const unixRegex = /^[\d]+$/i;
-        // If date is in YYYY-MM-DD format
-        if (dateRegex.test(date)) {
-            // Parse date to unix timestamp and convert date to utc string
-            return res.json({ unix: Date.parse(date), utc: new Date(date).toUTCString() });
-        } else if (unixRegex.test(date)) {
-            // Return date as Int and convert to utc date string
-            return res.json({ unix: parseInt(date), utc: new Date(parseInt(date)).toUTCString() })
-        } else {
-        res.json({ error: "Invalid Date" });
-    };
-})
 
-// Listen on port set in environment variable or default to 3000
-var listener = app.listen(process.env.PORT || 3000, function () {
-  console.log('Your app is listening on port ' + listener.address().port);
+    // Check if empty params
+    if (!date) {
+        // Return current date
+        return res.json({
+            unix: Date.parse(new Date()), utc: new Date().toUTCString()
+        });
+    }
+
+    const dateRegex = /\d{4,}/i;
+    // Check if valid params using regex
+    if (dateRegex.test(date)) {
+        if (Date.parse(date)) {
+            // Params passed are unix timestamp
+            return res.json({
+                unix: Date.parse(date), utc: new Date(date).toUTCString()
+            });
+        } else {
+            // Params passed were YYYY-MM-DD, MM-DD-YYYY, mmm dd YYYY, etc.
+            return res.json({
+                unix: Date.parse(new Date(parseInt(date)).toUTCString()), utc: new Date(parseInt(date)).toUTCString()
+            });
+        }
+    } else {
+        // Params were invalid
+        return res.json({ error: "Invalid Date" });
+    }
+});
+
+// Listen on PORT or default to 3000
+app.listen(PORT, () => {
+    console.log(`App listening on port ${PORT}`);
 });
